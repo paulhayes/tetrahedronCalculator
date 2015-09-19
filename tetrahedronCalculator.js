@@ -159,9 +159,16 @@ var tetraCoords = function(){
 	*/
 	var triangles = [
 		[0,1,2],
-		[0,4,3],
-		[1,5,4],
-		[2,3,5]
+		[0,3,4],
+		[1,4,5],
+		[2,5,3]
+	];
+
+	var triangleVertexes = [
+		[0,1,2],
+		[3,2,1],
+		[3,0,2],
+		[3,1,0]
 	];
 
 	tetraCoords.triangles = triangles;
@@ -187,7 +194,9 @@ var tetraCoords = function(){
 		returns the closest point on the plane to the point
 	*/
 	Vector.projectOntoPlane = function(a,b,c){
-		return a.add( b.multiply( -a.subtract(c).dot(b.unit()) ) );
+		b = b.unit();
+		var dot = c.subtract(a).dot(b.negative());
+		return a.add( b.negative().multiply( dot ) );
 	}
 
 	Vector.project = function(a,b){
@@ -203,6 +212,36 @@ var tetraCoords = function(){
 		}
 	}
 
+
+	/* incomplete */
+	var checkVertexTriple = function(){
+		/* all angles should some to < 180 */
+
+		var vertexTriples = [0,1,2,3];
+		vertexTriples.forEach(function(vertexIndex){
+			var angleSum = 0;
+				
+			for(var i=0;i<triangleVertexes.length;i++){
+				var vertexTriangleIndex;
+				if((vertexTriangleIndex=triangleVertexes[i].indexOf(vertexIndex))>=0){
+					var a = lengths[triangles[i][vertexTriangleIndex]];
+					var b = lengths[triangles[i][(vertexTriangleIndex+1)%3]];
+					var c = lengths[triangles[i][(vertexTriangleIndex+2)%3]];
+					var A = Math.acos((b*b+c*c-a*a)/(2*b*c));
+					angleSum+=A;
+				}
+			}
+			//console.log("vertex "+vertexIndex+" was "+(( angleSum < Math.PI )?"acute":"obtuse"));
+			//currently inconclusive
+		});
+	}
+
+	var indexesToValues = function(indexes,values){
+		return indexes.map(function(i){ return values[i] });
+	}
+
+	tetraCoords.indexesToValues = indexesToValues;
+
 	var lengths;
 	if(arguments[0] instanceof Array){
 		lengths = arguments[0];
@@ -210,7 +249,6 @@ var tetraCoords = function(){
 	else {
 		lengths = Array.prototype.slice.call(arguments);
 	}
-
 	lengths = lengths.map(function(length,i,a){
 		length = Number(length);
 		if( isNaN(length) ){
@@ -227,6 +265,8 @@ var tetraCoords = function(){
 		checkTriangle.apply(null,indexesToValues(triangle,lengths));
 	});
 
+	checkVertexTriple();
+
 	var verts = [];
 	var baseTri = circleIntersection.apply(null,indexesToValues(triangles[0],lengths));
 	var secondTri = circleIntersection.apply(null,indexesToValues(triangles[1],lengths))
@@ -238,17 +278,24 @@ var tetraCoords = function(){
 	verts.push( new Vector(lengths[0]-baseTri.x,0,-baseTri.y/3) );
 	verts.push( new Vector(-baseTri.x,0,-baseTri.y/3) );
 
+	console.log("secondTri: ",secondTri);
 
 	/*
 	 * calculate the midpoint for the last vertex along edge 0, and the normal for the plane it lies along
 	 */
-	var secondTriBaseMidpoint = Vector.lerp(verts[2],verts[1],secondTri.x/Vector.distance(verts[1],verts[2]));
+	var secondTriBaseMidpoint = Vector.lerp(verts[1],verts[2],secondTri.x/Vector.distance(verts[1],verts[2]));
 	var secondTriBaseEdgePlane = verts[1].subtract(verts[2]).unit();
 	
+	console.log("secondTriBaseMidpoint: "+secondTriBaseMidpoint);
+	console.log("secondTriBaseEdgePlane"+secondTriBaseEdgePlane);
 
 	var vert0OnPlane = Vector.projectOntoPlane(verts[0],secondTriBaseEdgePlane,secondTriBaseMidpoint);
 	var vert0DistanceToPlane = Vector.distance(vert0OnPlane,verts[0]);
-	var thirdTri = circleIntersection( Vector.distance(vert0OnPlane,secondTriBaseMidpoint),Math.sqrt(lengths[5]*lengths[5] - vert0DistanceToPlane*vert0DistanceToPlane),secondTri.y );
+	var vert0ToVert3Length = lengths[5];
+	var thirdTri = circleIntersection( Vector.distance(vert0OnPlane,secondTriBaseMidpoint),Math.sqrt(vert0ToVert3Length*vert0ToVert3Length - vert0DistanceToPlane*vert0DistanceToPlane),secondTri.y );
+
+	console.log("vert0OnPlane",vert0OnPlane);
+	console.log("vert0DistanceToPlane",vert0DistanceToPlane);
 
 	var horizontalNormal = new Vector(-secondTriBaseEdgePlane.z,0,secondTriBaseEdgePlane.x).unit().multiply(thirdTri.x);
 	verts.push( secondTriBaseMidpoint.add( horizontalNormal ).add(new Vector(0,thirdTri.y,0)) );
@@ -256,9 +303,6 @@ var tetraCoords = function(){
 	return verts;
 }
 
-var indexesToValues = function(indexes,values){
-	return indexes.map(function(i){ return values[i] });
-}
 
 var assert = function(name,a,b){
 	s = 1000;
@@ -306,7 +350,7 @@ var tetraTest = function(){
 	console.log("testing tetrahedron "+lengths.join(','));
 	var verts = tetraCoords.apply(null,lengths);
 	var calculatedLengths = tetraCoords.edges.map(function(edge){ 
-		return indexesToValues(edge,verts) 
+		return tetraCoords.indexesToValues(edge,verts) 
 	}).map(function(verts){ 
 		return tetraCoords.Vector.distance(verts[0],verts[1]);
 	});
