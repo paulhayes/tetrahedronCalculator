@@ -230,7 +230,6 @@ var tetraCoords = function(){
 	var verts = [];
 	var baseTri = circleIntersection.apply(null,indexesToValues(triangles[0],lengths));
 	var secondTri = circleIntersection.apply(null,indexesToValues(triangles[1],lengths))
-
 	/*
 	 * calculate position of first 3 vertexes ( that lie on the horizontal plane ), 
 	 * to positoned relative to the centroid of the base triangle as the origin
@@ -238,10 +237,21 @@ var tetraCoords = function(){
 	verts.push( new Vector(0,0,2*baseTri.y/3) );
 	verts.push( new Vector(lengths[0]-baseTri.x,0,-baseTri.y/3) );
 	verts.push( new Vector(-baseTri.x,0,-baseTri.y/3) );
-	verts.push( new Vector() );
-	verts.push( new Vector() );
-	verts.push( new Vector() );
 
+
+	/*
+	 * calculate the midpoint for the last vertex along edge 0, and the normal for the plane it lies along
+	 */
+	var secondTriBaseMidpoint = Vector.lerp(verts[2],verts[1],secondTri.x/Vector.distance(verts[1],verts[2]));
+	var secondTriBaseEdgePlane = verts[1].subtract(verts[2]).unit();
+	
+
+	var vert0OnPlane = Vector.projectOntoPlane(verts[0],secondTriBaseEdgePlane,secondTriBaseMidpoint);
+	var vert0DistanceToPlane = Vector.distance(vert0OnPlane,verts[0]);
+	var thirdTri = circleIntersection( Vector.distance(vert0OnPlane,secondTriBaseMidpoint),Math.sqrt(lengths[5]*lengths[5] - vert0DistanceToPlane*vert0DistanceToPlane),secondTri.y );
+
+	var horizontalNormal = new Vector(-secondTriBaseEdgePlane.z,0,secondTriBaseEdgePlane.x).unit().multiply(thirdTri.x);
+	verts.push( secondTriBaseMidpoint.add( horizontalNormal ).add(new Vector(0,thirdTri.y,0)) );
 	
 	return verts;
 }
@@ -251,9 +261,11 @@ var indexesToValues = function(indexes,values){
 }
 
 var assert = function(name,a,b){
-	s = 10000;
-	a=Math.round(s*a)/s;
-	b=Math.round(s*b)/s;
+	s = 1000;
+	if(s>0){
+		a=Math.round(s*a)/s;
+		b=Math.round(s*b)/s;
+	}
 	console.log(name+" "+a+"="+b+" "+((a==b)?"true":"false"))
 }
 
