@@ -2,7 +2,6 @@ tetraCoords = require('./tetrahedronCalculator');
 
 var lengths = process.argv.slice(2);
 console.log("testing tetrahedron "+lengths.join(','));
-console.log(lengths);
 var verts = tetraCoords(lengths);
 var calculatedLengths = tetraCoords.edges.map(function(edge){ 
 	return tetraCoords.indexesToValues(edge,verts) 

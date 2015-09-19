@@ -208,7 +208,7 @@ var tetraCoords = function(){
 			var j=(i+1)%3;
 			var k=(i+2)%3;
 			
-			if( arguments[i] > arguments[j]+arguments[k] ) throw new Error("Invalid lengths for triangle "+Array.prototype.join.call(arguments,','));
+			if( arguments[i] > arguments[j]+arguments[k] ) throw new RangeError("Invalid lengths for triangle "+Array.prototype.join.call(arguments,','));
 		}
 	}
 
@@ -252,7 +252,7 @@ var tetraCoords = function(){
 	lengths = lengths.map(function(length,i,a){
 		length = Number(length);
 		if( isNaN(length) ){
-			throw new Error("Invalid parameter provided to tetraCoords");
+			throw new TypeError("Invalid parameter provided to tetraCoords");
 		}
 		return length;
 	});
@@ -278,7 +278,7 @@ var tetraCoords = function(){
 	verts.push( new Vector(lengths[0]-baseTri.x,0,-baseTri.y/3) );
 	verts.push( new Vector(-baseTri.x,0,-baseTri.y/3) );
 
-	console.log("secondTri: ",secondTri);
+	//console.log("secondTri: ",secondTri);
 
 	/*
 	 * calculate the midpoint for the last vertex along edge 0, and the normal for the plane it lies along
@@ -286,16 +286,16 @@ var tetraCoords = function(){
 	var secondTriBaseMidpoint = Vector.lerp(verts[1],verts[2],secondTri.x/Vector.distance(verts[1],verts[2]));
 	var secondTriBaseEdgePlane = verts[1].subtract(verts[2]).unit();
 	
-	console.log("secondTriBaseMidpoint: "+secondTriBaseMidpoint);
-	console.log("secondTriBaseEdgePlane"+secondTriBaseEdgePlane);
+	//console.log("secondTriBaseMidpoint: "+secondTriBaseMidpoint);
+	//console.log("secondTriBaseEdgePlane"+secondTriBaseEdgePlane);
 
 	var vert0OnPlane = Vector.projectOntoPlane(verts[0],secondTriBaseEdgePlane,secondTriBaseMidpoint);
 	var vert0DistanceToPlane = Vector.distance(vert0OnPlane,verts[0]);
 	var vert0ToVert3Length = lengths[5];
 	var thirdTri = circleIntersection( Vector.distance(vert0OnPlane,secondTriBaseMidpoint),Math.sqrt(vert0ToVert3Length*vert0ToVert3Length - vert0DistanceToPlane*vert0DistanceToPlane),secondTri.y );
 
-	console.log("vert0OnPlane",vert0OnPlane);
-	console.log("vert0DistanceToPlane",vert0DistanceToPlane);
+	//console.log("vert0OnPlane",vert0OnPlane);
+	//console.log("vert0DistanceToPlane",vert0DistanceToPlane);
 
 	var horizontalNormal = new Vector(-secondTriBaseEdgePlane.z,0,secondTriBaseEdgePlane.x).unit().multiply(thirdTri.x);
 	verts.push( secondTriBaseMidpoint.add( horizontalNormal ).add(new Vector(0,thirdTri.y,0)) );
