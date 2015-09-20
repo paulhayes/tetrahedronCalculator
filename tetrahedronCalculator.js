@@ -286,18 +286,24 @@ var tetraCoords = function(){
 	var secondTriBaseMidpoint = Vector.lerp(verts[1],verts[2],secondTri.x/Vector.distance(verts[1],verts[2]));
 	var secondTriBaseEdgePlane = verts[1].subtract(verts[2]).unit();
 	
-	//console.log("secondTriBaseMidpoint: "+secondTriBaseMidpoint);
+	console.log("secondTriBaseMidpoint: "+secondTriBaseMidpoint);
 	//console.log("secondTriBaseEdgePlane"+secondTriBaseEdgePlane);
 
 	var vert0OnPlane = Vector.projectOntoPlane(verts[0],secondTriBaseEdgePlane,secondTriBaseMidpoint);
 	var vert0DistanceToPlane = Vector.distance(vert0OnPlane,verts[0]);
 	var vert0ToVert3Length = lengths[5];
-	var thirdTri = circleIntersection( Vector.distance(vert0OnPlane,secondTriBaseMidpoint),Math.sqrt(vert0ToVert3Length*vert0ToVert3Length - vert0DistanceToPlane*vert0DistanceToPlane),secondTri.y );
+	var lengthEdge5 = Math.sqrt(vert0ToVert3Length*vert0ToVert3Length - vert0DistanceToPlane*vert0DistanceToPlane);
+	var thirdTri = circleIntersection( Vector.distance(vert0OnPlane,secondTriBaseMidpoint),secondTri.y, lengthEdge5 );
 
-	//console.log("vert0OnPlane",vert0OnPlane);
+	console.log("d",Vector.distance(vert0OnPlane,secondTriBaseMidpoint));
+	console.log("vert0OnPlane",vert0OnPlane);
+	
+	console.log("thirdTri",thirdTri)
 	//console.log("vert0DistanceToPlane",vert0DistanceToPlane);
 
 	var horizontalNormal = new Vector(-secondTriBaseEdgePlane.z,0,secondTriBaseEdgePlane.x).unit().multiply(thirdTri.x);
+	
+	console.log("horizontalNormal "+horizontalNormal);
 	verts.push( secondTriBaseMidpoint.add( horizontalNormal ).add(new Vector(0,thirdTri.y,0)) );
 	
 	return verts;
