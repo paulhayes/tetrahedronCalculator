@@ -213,9 +213,12 @@ var tetraCoords = function(){
 	}
 
 
-	/* incomplete */
+	/*  
+	 * Not working
+	 * all angles of a single vertexes  should sum to < 180
+	 * https://www.ems-ph.org/journals/show_pdf.php?issn=0013-6018&vol=64&iss=4&rank=4
+	 */
 	var checkVertexTriple = function(){
-		/* all angles should some to < 180 */
 
 		var vertexTriples = [0,1,2,3];
 		vertexTriples.forEach(function(vertexIndex){
@@ -231,8 +234,8 @@ var tetraCoords = function(){
 					angleSum+=A;
 				}
 			}
-			//console.log("vertex "+vertexIndex+" was "+(( angleSum < Math.PI )?"acute":"obtuse"));
-			//currently inconclusive
+			console.log("vertex "+vertexIndex+" was "+(( angleSum < 2*Math.PI )?"< 360":"> 360"));
+			
 		});
 	}
 
@@ -278,8 +281,6 @@ var tetraCoords = function(){
 	verts.push( new Vector(lengths[0]-baseTri.x,0,-baseTri.y/3) );
 	verts.push( new Vector(-baseTri.x,0,-baseTri.y/3) );
 
-	//console.log("secondTri: ",secondTri);
-
 	/*
 	 * calculate the midpoint for the last vertex along edge 0, and the normal for the plane it lies along
 	 */
@@ -293,6 +294,11 @@ var tetraCoords = function(){
 	var vert0DistanceToPlane = Vector.distance(vert0OnPlane,verts[0]);
 	var lengthEdge5 = lengths[5];
 	var lengthEdge5Projected = Math.sqrt(lengthEdge5*lengthEdge5 - vert0DistanceToPlane*vert0DistanceToPlane);
+
+
+	/*
+	 * Find the interseciton point of there last two cicles, and calculate vertex position from those coords 
+	 */
 	var thirdTri = circleIntersection( Vector.distance(vert0OnPlane,secondTriBaseMidpoint),secondTri.y, lengthEdge5Projected );
 	var horizontalNormal = new Vector(-secondTriBaseEdgePlane.z,0,secondTriBaseEdgePlane.x).unit().multiply(thirdTri.x);
 	
